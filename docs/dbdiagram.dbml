@@ -1,0 +1,293 @@
+```dbml
+Table media {
+  id uuid [pk]
+  url varchar
+  media_type varchar
+  mime_type varchar
+  size int
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table users {
+  id uuid [pk]
+  email varchar [unique, not null]
+  password_hash varchar
+  role varchar
+  created_at timestamptz
+  updated_at timestamptz
+  deleted_at timestamptz
+}
+
+Table user_profiles {
+  user_id uuid [pk]
+  full_name varchar
+  phone varchar
+  avatar_media_id uuid
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table addresses {
+  id uuid [pk]
+  user_id uuid
+  street varchar
+  city varchar
+  state varchar
+  country varchar
+  postal_code varchar
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table categories {
+  id uuid [pk]
+  name varchar
+  parent_id uuid
+  slug varchar [unique]
+}
+
+Table brands {
+  id uuid [pk]
+  name varchar [not null, unique]
+  slug varchar [unique]
+  description text
+  website varchar
+  logo_media_id uuid
+  created_at timestamptz
+  updated_at timestamptz
+  deleted_at timestamptz
+}
+
+Table products {
+  id uuid [pk]
+  name varchar
+  slug varchar [unique]
+  description text
+  brand_id uuid
+  status varchar
+  average_rating numeric
+  total_reviews numeric
+  created_at timestamptz
+  updated_at timestamptz
+  deleted_at timestamptz
+}
+
+Table product_categories {
+  product_id uuid
+  category_id uuid
+
+  indexes {
+    (product_id, category_id) [pk]
+  }
+}
+
+Table product_variants {
+  id uuid [pk]
+  product_id uuid
+  sku varchar [unique]
+  price numeric
+  compare_at_price numeric
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table variant_media {
+  id uuid [pk]
+  variant_id uuid
+  media_id uuid
+  position int
+  is_primary boolean
+}
+
+Table attributes {
+  id uuid [pk]
+  name varchar
+}
+
+Table attribute_values {
+  id uuid [pk]
+  attribute_id uuid
+  value varchar
+}
+
+Table variant_attributes {
+  variant_id uuid
+  attribute_value_id uuid
+}
+
+Table warehouses {
+  id uuid [pk]
+  name varchar
+  location varchar
+}
+
+Table inventory_items {
+  id uuid [pk]
+  variant_id uuid
+  warehouse_id uuid
+  quantity int
+  reserved int
+}
+
+Table carts {
+  id uuid [pk]
+  user_id uuid
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table cart_items {
+  id uuid [pk]
+  cart_id uuid
+  product_id uuid
+  variant_id uuid
+  quantity int
+}
+
+Table orders {
+  id uuid [pk]
+  user_id uuid
+  status varchar
+  payment_status varchar
+  fulfillment_status varchar
+  subtotal_amount numeric
+  discount_amount numeric
+  tax_amount numeric
+  shipping_amount numeric
+  total_amount numeric
+  currency varchar
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table order_items {
+  id uuid [pk]
+  order_id uuid
+  product_id uuid
+  variant_id uuid
+  unit_price numeric
+  quantity int
+}
+
+Table order_addresses {
+  id uuid [pk]
+  order_id uuid
+  type varchar // shipping | billing
+  full_name varchar
+  phone varchar
+  street varchar
+  city varchar
+  state varchar
+  country varchar
+  postal_code varchar
+}
+
+Table payments {
+  id uuid [pk]
+  order_id uuid
+  provider varchar
+  amount numeric
+  status varchar
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table shipments {
+  id uuid [pk]
+  order_id uuid
+  carrier varchar
+  tracking_number varchar
+  status varchar
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table product_reviews {
+  id uuid [pk]
+  product_id uuid [not null]
+  user_id uuid [not null]
+  rating int
+  title varchar
+  content text
+  verified_purchase boolean
+  likes_count int [default: 0]
+  comments_count int [default: 0]
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table review_media {
+  review_id uuid
+  media_id uuid
+
+  indexes {
+    (review_id, media_id) [pk]
+  }
+}
+
+Table review_comments {
+  id uuid [pk]
+  review_id uuid [not null]
+  user_id uuid [not null]
+  parent_id uuid
+  content text
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+enum reaction_entity_type {
+  comment
+  review
+}
+
+Table reactions {
+  id uuid [pk]
+  user_id uuid
+  entity_type reaction_entity_type
+  entity_id uuid
+  reaction_type varchar
+  created_at timestamptz
+  updated_at timestamptz
+
+  indexes {
+    (user_id, entity_type, entity_id) [unique]
+  }
+}
+
+Ref: user_profiles.user_id > users.id
+Ref: user_profiles.avatar_media_id > media.id
+Ref: addresses.user_id > users.id
+Ref: categories.parent_id > categories.id
+Ref: brands.logo_media_id > media.id
+Ref: products.brand_id > brands.id
+Ref: product_categories.product_id > products.id
+Ref: product_categories.category_id > categories.id
+Ref: product_variants.product_id > products.id
+Ref: variant_media.variant_id > product_variants.id
+Ref: variant_media.media_id > media.id
+Ref: attribute_values.attribute_id > attributes.id
+Ref: variant_attributes.variant_id > product_variants.id
+Ref: variant_attributes.attribute_value_id > attribute_values.id
+Ref: inventory_items.variant_id > product_variants.id
+Ref: inventory_items.warehouse_id > warehouses.id
+Ref: carts.user_id > users.id
+Ref: cart_items.cart_id > carts.id
+Ref: cart_items.product_id > products.id
+Ref: cart_items.variant_id > product_variants.id
+Ref: orders.user_id > users.id
+Ref: order_items.order_id > orders.id
+Ref: order_items.product_id > products.id
+Ref: order_items.variant_id > product_variants.id
+Ref: order_addresses.order_id > orders.id
+Ref: payments.order_id > orders.id
+Ref: shipments.order_id > orders.id
+Ref: product_reviews.product_id > products.id
+Ref: product_reviews.user_id > users.id
+Ref: review_media.review_id > product_reviews.id
+Ref: review_media.media_id > media.id
+Ref: review_comments.review_id > product_reviews.id
+Ref: review_comments.user_id > users.id
+Ref: review_comments.parent_id > review_comments.id
+Ref: reactions.user_id > users.id
+```
