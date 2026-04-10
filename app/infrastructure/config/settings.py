@@ -1,5 +1,11 @@
+import logging
 from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
+
+logging.basicConfig(
+  level=logging.DEBUG,  # <-- THIS enables debug logs
+  format="%(levelname)s:    %(message)s",
+)
 
 
 class Settings(BaseSettings):
@@ -13,6 +19,10 @@ class Settings(BaseSettings):
   DB_NAME: str
   DB_USER: str
   DB_PWD: str
+  REDIS_HOST: str
+  REDIS_PORT: str
+  REDIS_DB: str
+  REDIS_PASSWORD: str
   DEBUG: bool
 
 
