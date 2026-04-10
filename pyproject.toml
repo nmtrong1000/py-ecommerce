@@ -3,3 +3,7 @@ indent-width = 2
 
 [tool.ruff.format]
 indent-style = "space"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+python_files = ["test_*.py", "*_test.py"]
